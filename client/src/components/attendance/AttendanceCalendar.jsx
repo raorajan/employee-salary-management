@@ -11,6 +11,11 @@ export default function AttendanceCalendar({ selectedDate, onDateSelect }) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const markedDates = getAttendanceByDayForMonth(year, month, selectedEmployee || null);
+
   const handleDayClick = (day) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     onDateSelect(dateStr);
