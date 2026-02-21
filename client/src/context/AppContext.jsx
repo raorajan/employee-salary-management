@@ -286,9 +286,10 @@ export function AppProvider({ children }) {
     const today = new Date().toISOString().slice(0, 10);
     const todayAttendance = attendance.filter((a) => a.date === today);
     const present = todayAttendance.filter((a) => a.status === 'present').length;
-    const absent = employees.length - todayAttendance.length;
     const leave = todayAttendance.filter((a) => a.status === 'leave').length;
     const late = todayAttendance.filter((a) => a.status === 'late').length;
+    // Absent is anyone who is not present, late, or on leave
+    const absent = employees.length - (present + late + leave);
     return { present, absent, leave, late, total: employees.length };
   }, [attendance, employees]);
 
