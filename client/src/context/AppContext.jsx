@@ -357,9 +357,23 @@ export function AppProvider({ children }) {
     }
 
     if (reportType === 'salary') {
-      return salaryHistory.filter(
-        (s) => s.monthKey === monthKey && targetEmployees.some((e) => e.id === s.employeeId)
-      );
+      return targetEmployees.map((emp) => {
+        const existing = salaryHistory.find((s) => s.employeeId === emp.id && s.monthKey === monthKey);
+        if (existing) return existing;
+
+        const totalHours = getTotalHoursForPeriod(emp.id, monthKey);
+        const calculation = getSalaryCalculation(emp.id, totalHours, 0); // Simplified for report
+        return {
+          id: `proj-${emp.id}-${monthKey}`,
+          employeeId: emp.id,
+          employeeName: emp.name,
+          monthKey,
+          totalHours,
+          amount: calculation?.netSalary || 0,
+          status: 'Projected',
+          date: '-',
+        };
+      });
     }
 
     if (reportType === 'leave') {

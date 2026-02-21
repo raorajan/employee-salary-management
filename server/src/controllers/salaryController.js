@@ -39,26 +39,40 @@ exports.processPayroll = async (req, res) => {
       : await Employee.find();
     const newRecords = [];
     for (const emp of employees) {
-      const existing = await SalaryRecord.findOne({ employeeId: emp.employeeId, monthKey });
+      const eId = emp.employeeId.trim();
+      const mKey = monthKey.trim();
+      
+      const existing = await SalaryRecord.findOne({ employeeId: eId, monthKey: mKey });
       if (existing) continue;
-      const totalHours = await getTotalHoursForPeriod(emp.employeeId, monthKey);
+
+      const totalHours = await getTotalHoursForPeriod(eId, mKey);
       if (totalHours <= 0) continue;
+
       const hourlyRate = emp.hourlyRate ?? Math.round((emp.baseSalary || 40000) / 176);
       const grossPay = Math.round(totalHours * hourlyRate);
-      const pendingAdvances = await Advance.find({ employeeId: emp.employeeId, status: 'Pending' });
+      const pendingAdvances = await Advance.find({ employeeId: eId, status: 'Pending' });
       const advanceDeduction = pendingAdvances.reduce((s, a) => s + a.amount, 0);
       const netSalary = Math.max(0, grossPay - advanceDeduction);
-      const record = await SalaryRecord.create({
-        employeeId: emp.employeeId,
-        employeeName: emp.name,
-        monthKey,
-        monthLabel,
-        totalHours,
-        amount: netSalary,
-        status: 'Paid',
-        date: payDateStr,
-      });
-      newRecords.push(record);
+      
+      try {
+        const record = await SalaryRecord.create({
+          employeeId: eId,
+          employeeName: emp.name,
+          monthKey: mKey,
+          monthLabel,
+          totalHours,
+          amount: netSalary,
+          status: 'Paid',
+          date: payDateStr,
+        });
+        newRecords.push(record);
+      } catch (err) {
+        if (err.code === 11000) {
+          console.log(`Skipping duplicate salary record for ${eId} - ${mKey}`);
+          continue;
+        }
+        throw err;
+      }
     }
     const paidEmployeeIds = newRecords.map((r) => r.employeeId);
     await Advance.updateMany(
