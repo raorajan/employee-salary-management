@@ -362,7 +362,10 @@ export function AppProvider({ children }) {
         if (existing) return existing;
 
         const totalHours = getTotalHoursForPeriod(emp.id, monthKey);
-        const calculation = getSalaryCalculation(emp.id, totalHours, 0); // Simplified for report
+        const pendingAdvances = advances.filter((a) => a.employeeId === emp.id && a.status === 'Pending');
+        const advanceDeduction = pendingAdvances.reduce((sum, a) => sum + a.amount, 0);
+        
+        const calculation = getSalaryCalculation(emp.id, totalHours, advanceDeduction);
         return {
           id: `proj-${emp.id}-${monthKey}`,
           employeeId: emp.id,
@@ -370,6 +373,7 @@ export function AppProvider({ children }) {
           monthKey,
           totalHours,
           amount: calculation?.netSalary || 0,
+          deductions: advanceDeduction,
           status: 'Projected',
           date: '-',
         };

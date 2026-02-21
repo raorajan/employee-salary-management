@@ -172,7 +172,8 @@ export default function ReportGenerator() {
                     <tr className="text-left text-gray-500 dark:text-gray-400">
                       <th className="pb-2">Employee</th>
                       <th className="pb-2">Hours</th>
-                      <th className="pb-2">Amount</th>
+                      <th className="pb-2">Deductions</th>
+                      <th className="pb-2">Net Pay</th>
                       <th className="pb-2">Status</th>
                     </tr>
                   </thead>
@@ -181,8 +182,19 @@ export default function ReportGenerator() {
                       <tr key={row.id}>
                         <td className="py-2">{row.employeeName}</td>
                         <td className="py-2">{row.totalHours ?? '-'}h</td>
-                        <td className="py-2">₹{row.amount?.toLocaleString()}</td>
-                        <td className="py-2">{row.status}</td>
+                        <td className="py-2 text-red-600 dark:text-red-400">
+                          {row.deductions > 0 ? `-₹${row.deductions.toLocaleString()}` : '-'}
+                        </td>
+                        <td className="py-2 font-medium">₹{row.amount?.toLocaleString()}</td>
+                        <td className="py-2">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${
+                            row.status === 'Paid' 
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                              : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
+                          }`}>
+                            {row.status}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
