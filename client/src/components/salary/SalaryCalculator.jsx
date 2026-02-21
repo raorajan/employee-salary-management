@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 
 export default function SalaryCalculator() {
-  const { employees, attendance, getTotalHoursForPeriod, getSalaryCalculation } = useApp();
+  const { employees, attendance, advances, getTotalHoursForPeriod, getSalaryCalculation } = useApp();
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [monthKey, setMonthKey] = useState(new Date().toISOString().slice(0, 7));
   const [totalHours, setTotalHours] = useState(0);
@@ -12,10 +12,18 @@ export default function SalaryCalculator() {
   const hoursFromAttendance = getTotalHoursForPeriod(selectedEmployee, monthKey);
 
   useEffect(() => {
-    if (selectedEmployee && monthKey) {
+    if (selectedEmployee) {
       setTotalHours(hoursFromAttendance);
+      
+      // Automatically factor in pending advances
+      const pendingAdvances = advances.filter(a => a.employeeId === selectedEmployee && a.status === 'Pending');
+      const advanceSum = pendingAdvances.reduce((sum, a) => sum + a.amount, 0);
+      setDeductions(advanceSum);
+    } else {
+      setTotalHours(0);
+      setDeductions(0);
     }
-  }, [selectedEmployee, monthKey, hoursFromAttendance]);
+  }, [selectedEmployee, monthKey, hoursFromAttendance, advances]);
 
   const calc = selectedEmployee && emp
     ? getSalaryCalculation(selectedEmployee, totalHours, deductions)
@@ -74,6 +82,7 @@ export default function SalaryCalculator() {
                   onChange={(e) => setDeductions(Math.max(0, Number(e.target.value) || 0))}
                   className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
+                <p className="mt-1 text-[10px] text-gray-500 dark:text-gray-400 italic">Includes pending advances</p>
               </div>
             </div>
             {calc && (
