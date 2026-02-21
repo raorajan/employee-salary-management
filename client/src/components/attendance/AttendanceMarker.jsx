@@ -4,7 +4,7 @@ import { useApp } from '../../context/AppContext';
 const STANDARD_HOURS = 8;
 const LABOUR_OVERTIME_DEFAULT = 4;
 
-export default function AttendanceMarker() {
+export default function AttendanceMarker({ selectedDate, onDateReset }) {
   const { employees, markAttendance } = useApp();
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [status, setStatus] = useState('present');
@@ -16,6 +16,8 @@ export default function AttendanceMarker() {
   const isLabour = selectedEmp?.department === 'Labour';
   const showOvertime = selectedEmployee && (status === 'present' || status === 'late');
   const showWorkedHours = selectedEmployee && status === 'late';
+
+  const isToday = selectedDate === new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     if (showOvertime && isLabour) setOvertimeHours(LABOUR_OVERTIME_DEFAULT);
@@ -31,15 +33,14 @@ export default function AttendanceMarker() {
       return;
     }
     try {
-      const today = new Date().toISOString().slice(0, 10);
       await markAttendance(
         selectedEmployee,
-        today,
+        selectedDate,
         status,
         showOvertime ? overtimeHours : 0,
         showWorkedHours ? workedHours : null
       );
-      setMessage('Attendance marked successfully');
+      setMessage(`Attendance marked for ${selectedDate}`);
       setSelectedEmployee('');
       setOvertimeHours(isLabour ? LABOUR_OVERTIME_DEFAULT : 0);
       setWorkedHours(STANDARD_HOURS);
@@ -51,10 +52,24 @@ export default function AttendanceMarker() {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-      <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700">
+      <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
         <h3 className="text-base sm:text-lg font-semibold dark:text-gray-100">Mark Attendance</h3>
+        {!isToday && (
+          <button 
+            onClick={onDateReset}
+            className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-medium"
+          >
+            Reset to Today
+          </button>
+        )}
       </div>
       <div className="p-4 sm:p-5 space-y-4">
+        <div className="bg-indigo-50/50 dark:bg-indigo-900/10 p-3 rounded-lg border border-indigo-100 dark:border-indigo-900/30">
+          <div className="text-[10px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-bold mb-1">Marking Attendance For</div>
+          <div className="text-sm font-semibold text-indigo-900 dark:text-indigo-200">
+            {new Date(selectedDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Employee</label>
           <select

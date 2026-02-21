@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AttendanceSummary from './AttendanceSummary';
 import AttendanceCalendar from './AttendanceCalendar';
 import AttendanceMarker from './AttendanceMarker';
 import OvertimeTracker from './OvertimeTracker';
 
 export default function AttendancePage() {
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
+
   return (
     <div className="space-y-4 sm:space-y-6 pb-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -13,10 +15,16 @@ export default function AttendancePage() {
       <AttendanceSummary />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="lg:col-span-2">
-          <AttendanceCalendar />
+          <AttendanceCalendar 
+            selectedDate={selectedDate} 
+            onDateSelect={setSelectedDate} 
+          />
         </div>
         <div className="space-y-4 sm:space-y-6">
-          <AttendanceMarker />
+          <AttendanceMarker 
+            selectedDate={selectedDate} 
+            onDateReset={() => setSelectedDate(new Date().toISOString().slice(0, 10))} 
+          />
           <OvertimeTracker />
         </div>
       </div>

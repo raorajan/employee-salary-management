@@ -4,19 +4,17 @@ import { useApp } from '../../context/AppContext';
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-export default function AttendanceCalendar() {
+export default function AttendanceCalendar({ selectedDate, onDateSelect }) {
   const { employees, getAttendanceByDayForMonth } = useApp();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEmployee, setSelectedEmployee] = useState(employees[0]?.id || '');
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
 
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-
-  const markedDates = getAttendanceByDayForMonth(year, month, selectedEmployee || null);
+  const handleDayClick = (day) => {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    onDateSelect(dateStr);
+  };
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1));
@@ -79,15 +77,22 @@ export default function AttendanceCalendar() {
                 <div key={`empty-${i}`} className="aspect-square" />
               ))}
               {days.map((day) => {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isSelected = selectedDate === dateStr;
                 const record = markedDates[day];
                 const status = record?.status;
                 const dotClass = status === 'present' ? 'bg-green-500' : status === 'absent' ? 'bg-red-500' : status === 'leave' ? 'bg-amber-500' : status === 'late' ? 'bg-orange-500' : 'bg-gray-200 dark:bg-gray-600';
                 return (
                   <div
                     key={day}
-                    className="aspect-square flex flex-col items-center justify-center rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-default"
+                    onClick={() => handleDayClick(day)}
+                    className={`aspect-square flex flex-col items-center justify-center rounded-lg transition-all cursor-pointer border ${
+                      isSelected 
+                        ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-400 shadow-sm' 
+                        : 'border-transparent hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                    }`}
                   >
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-200">{day}</span>
+                    <span className={`text-sm font-medium ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-gray-200'}`}>{day}</span>
                     {status && (
                       <span className={`mt-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`} title={status} />
                     )}
