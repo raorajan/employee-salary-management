@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 
 export default function AdvancePayment() {
-  const { employees, advances, addAdvance } = useApp();
+  const { employees, advances, requestAdvance } = useApp();
   const [amount, setAmount] = useState('');
   const [employee, setEmployee] = useState('');
 
@@ -11,7 +11,7 @@ export default function AdvancePayment() {
     if (!employee || !amount || Number(amount) <= 0) return;
     setSubmitting(true);
     try {
-      await addAdvance(employee, Number(amount));
+      await requestAdvance({ employeeId: employee, amount: Number(amount) });
       setAmount('');
       setEmployee('');
     } finally {

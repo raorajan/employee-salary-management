@@ -20,9 +20,7 @@ exports.create = async (req, res) => {
     
     // We store the monthly salary as baseSalary. 
     // hourlyRate is stored as a derived value for convenience (Salary / (Days * 8))
-    const currentMonth = new Date().toISOString().slice(0, 7);
-    const days = getDaysInMonth(currentMonth);
-    const derivedHourlyRate = monthlySalary > 0 ? Math.round(monthlySalary / (days * 8)) : 0;
+    const derivedHourlyRate = monthlySalary > 0 ? (monthlySalary / 240) : 0;
     
     const employee = new Employee({
       employeeId,
@@ -54,6 +52,34 @@ exports.remove = async (req, res) => {
     await Advance.deleteMany({ employeeId: id });
     await ActivityLog.create({ message: `Employee removed: ${employee.name}` });
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.update = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = { ...req.body };
+    
+    if (updates.hourlyRate !== undefined) {
+      const monthlySalary = Number(updates.hourlyRate) || 0;
+      updates.baseSalary = monthlySalary;
+      updates.hourlyRate = monthlySalary > 0 ? (monthlySalary / 240) : 0;
+    }
+
+    const employee = await Employee.findOneAndUpdate(
+      { employeeId: id },
+      { $set: updates },
+      { new: true }
+    );
+
+    if (!employee) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    await ActivityLog.create({ message: `Employee updated: ${employee.name}` });
+    res.json(toFrontendEmployee(employee));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

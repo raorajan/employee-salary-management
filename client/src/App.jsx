@@ -13,11 +13,17 @@ import ReportsPage from './components/reports/ReportsPage'
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { loading, apiError } = useApp();
+  const [editingEmployee, setEditingEmployee] = useState(null);
+
+  const handleEdit = (emp) => {
+    setEditingEmployee(emp);
+    document.getElementById('add-employee-form')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-x-hidden">
       <Header toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-      <div className="flex pt-0 md:pt-6 relative px-3 sm:px-4 md:px-6 gap-4 md:gap-6 min-h-0">
+      <div className="flex pt-3 sm:pt-4 md:pt-6 relative px-3 sm:px-4 md:px-6 gap-0 md:gap-6 min-h-0">
         <Sidebar isOpen={isSidebarOpen} closeSidebar={() => setIsSidebarOpen(false)} />
         <main className="flex-1 min-w-0 w-full overflow-x-hidden pb-6 sm:pb-8 md:pb-12 relative">
           {loading && (
@@ -34,8 +40,8 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/employees" element={
               <div className="space-y-4 sm:space-y-6">
-                <EmployeeList />
-                <EmployeeForm />
+                <EmployeeList onEdit={handleEdit} />
+                <EmployeeForm editingEmployee={editingEmployee} onCancel={() => setEditingEmployee(null)} />
               </div>
             } />
             <Route path="/attendance" element={<AttendancePage />} />

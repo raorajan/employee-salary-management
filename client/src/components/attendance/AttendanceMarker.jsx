@@ -4,11 +4,10 @@ import { useApp } from '../../context/AppContext';
 const STANDARD_HOURS = 8;
 const LABOUR_OVERTIME_DEFAULT = 4;
 
-export default function AttendanceMarker({ selectedDate, onDateReset }) {
+export default function AttendanceMarker({ selectedDate, onDateSelect, onDateReset, selectedEmployee, onEmployeeSelect }) {
   const { employees, markAttendance } = useApp();
-  const [selectedEmployee, setSelectedEmployee] = useState('');
   const [status, setStatus] = useState('present');
-  const [overtimeHours, setOvertimeHours] = useState(0);
+  const [overtimeHours, setOvertimeHours] = useState(4);
   const [workedHours, setWorkedHours] = useState(STANDARD_HOURS);
   const [message, setMessage] = useState('');
 
@@ -20,8 +19,7 @@ export default function AttendanceMarker({ selectedDate, onDateReset }) {
   const isToday = selectedDate === new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
-    if (showOvertime && isLabour) setOvertimeHours(LABOUR_OVERTIME_DEFAULT);
-    else if (showOvertime && !isLabour) setOvertimeHours(0);
+    if (showOvertime) setOvertimeHours(4);
     
     // Reset worked hours to standard when switching away from late or changing employee
     if (!showWorkedHours) setWorkedHours(STANDARD_HOURS);
@@ -41,8 +39,7 @@ export default function AttendanceMarker({ selectedDate, onDateReset }) {
         showWorkedHours ? workedHours : null
       );
       setMessage(`Attendance marked for ${selectedDate}`);
-      setSelectedEmployee('');
-      setOvertimeHours(isLabour ? LABOUR_OVERTIME_DEFAULT : 0);
+      setOvertimeHours(4);
       setWorkedHours(STANDARD_HOURS);
     } catch {
       setMessage('Failed to mark attendance');
@@ -64,17 +61,31 @@ export default function AttendanceMarker({ selectedDate, onDateReset }) {
         )}
       </div>
       <div className="p-4 sm:p-5 space-y-4">
-        <div className="bg-indigo-50/50 dark:bg-indigo-900/10 p-3 rounded-lg border border-indigo-100 dark:border-indigo-900/30">
+        <div className="bg-indigo-50/50 dark:bg-indigo-900/10 p-3 rounded-lg border border-indigo-100 dark:border-indigo-900/30 relative">
           <div className="text-[10px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-bold mb-1">Marking Attendance For</div>
-          <div className="text-sm font-semibold text-indigo-900 dark:text-indigo-200">
-            {new Date(selectedDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-semibold text-indigo-900 dark:text-indigo-200">
+              {new Date(selectedDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+            <input 
+              type="date" 
+              value={selectedDate}
+              onChange={(e) => onDateSelect(e.target.value)}
+              className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+              title="Change date"
+            />
+            <button className="text-indigo-600 dark:text-indigo-400 p-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded-full transition-colors relative pointer-events-none">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </button>
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Employee</label>
           <select
             value={selectedEmployee}
-            onChange={(e) => setSelectedEmployee(e.target.value)}
+            onChange={(e) => onEmployeeSelect(e.target.value)}
             className="w-full px-4 py-2.5 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-base sm:text-sm"
           >
             <option value="">Select employee</option>
@@ -127,7 +138,7 @@ export default function AttendanceMarker({ selectedDate, onDateReset }) {
         {showOvertime && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Overtime (hours) {isLabour ? `— Labour default ${LABOUR_OVERTIME_DEFAULT}h` : ''}
+              Overtime (hours) — default 4h
             </label>
             <input
               type="number"

@@ -16,6 +16,11 @@ export default function SalaryHistory() {
   const [paymentDay, setPaymentDay] = useState('10');
   const [useCustomDate, setUseCustomDate] = useState(false);
   const [customDate, setCustomDate] = useState(new Date().toISOString().slice(0, 10));
+  const [filterMonth, setFilterMonth] = useState('');
+
+  const filteredHistory = filterMonth 
+    ? salaryHistory.filter(item => item.monthKey === filterMonth)
+    : salaryHistory;
 
   const getPaymentDate = () => {
     if (useCustomDate) return customDate;
@@ -38,21 +43,46 @@ export default function SalaryHistory() {
   return (
     <>
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <h3 className="text-lg font-semibold dark:text-gray-100">Salary History</h3>
+        <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
+            <h3 className="text-base sm:text-lg font-semibold dark:text-gray-100 whitespace-nowrap">Salary History</h3>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <input
+                type="month"
+                value={filterMonth}
+                onChange={(e) => setFilterMonth(e.target.value)}
+                className="flex-1 sm:w-40 px-3 py-2 sm:py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none min-h-[40px] sm:min-h-0"
+              />
+              {filterMonth && (
+                <button
+                  onClick={() => setFilterMonth('')}
+                  className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                  title="Clear filter"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
           <button
             onClick={() => setShowProcessModal(true)}
-            className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors min-h-[40px]"
+            className="w-full md:w-auto text-sm px-4 py-2.5 sm:py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 active:bg-indigo-800 transition-colors min-h-[44px] sm:min-h-[40px] font-medium"
           >
             Process Payroll
           </button>
         </div>
-        {salaryHistory.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">No salary records yet. Process payroll to add records.</div>
+        {filteredHistory.length === 0 ? (
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+            {filterMonth 
+              ? `No salary records found for ${new Date(filterMonth + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}.`
+              : 'No salary records yet. Process payroll to add records.'}
+          </div>
         ) : (
           <>
             <div className="block md:hidden divide-y divide-gray-100 dark:divide-gray-700">
-              {salaryHistory.map((item) => (
+              {filteredHistory.map((item) => (
                 <div key={item.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-900/30">
                   <div className="flex justify-between items-start gap-2">
                     <div>
@@ -86,7 +116,7 @@ export default function SalaryHistory() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {salaryHistory.map((item) => (
+                  {filteredHistory.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-200">{item.monthLabel}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{item.employeeName}</td>
@@ -120,18 +150,18 @@ export default function SalaryHistory() {
                 type="month"
                 value={processMonth}
                 onChange={(e) => setProcessMonth(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                className="w-full px-4 py-2.5 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 text-base sm:text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Payment Date (5th, 10th, 15th, 20th or custom)</label>
+              <label className="block text-sm font-medium mb-1">Payment Date</label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {PAYMENT_DATES.map((d) => (
                   <button
                     key={d.value}
                     type="button"
                     onClick={() => { setPaymentDay(d.value); setUseCustomDate(false); }}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors min-h-[40px] sm:min-h-0 ${
                       !useCustomDate && paymentDay === d.value
                         ? 'bg-indigo-600 text-white'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -143,7 +173,7 @@ export default function SalaryHistory() {
                 <button
                   type="button"
                   onClick={() => setUseCustomDate(true)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 sm:py-1.5 rounded-lg text-sm font-medium transition-colors min-h-[40px] sm:min-h-0 ${
                     useCustomDate ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                   }`}
                 >
@@ -155,7 +185,7 @@ export default function SalaryHistory() {
                   type="date"
                   value={customDate}
                   onChange={(e) => setCustomDate(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                  className="w-full px-4 py-2.5 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 text-base sm:text-sm"
                 />
               )}
             </div>

@@ -10,7 +10,7 @@ async function getTotalHoursForPeriod(employeeId, monthKey) {
     employeeId,
     date: new RegExp(`^${monthKey}`),
     status: { $in: ['present', 'late'] },
-    paymentStatus: 'unpaid',
+    paymentStatus: { $ne: 'paid' },
   });
   return records.reduce((sum, a) => {
     const hours = a.workedHours !== undefined && a.workedHours !== null ? a.workedHours : STANDARD_HOURS;
@@ -49,9 +49,8 @@ exports.processPayroll = async (req, res) => {
       const totalHours = await getTotalHoursForPeriod(eId, mKey);
       if (totalHours <= 0) continue;
 
-      const days = getDaysInMonth(mKey);
       const hourlyRate = emp.baseSalary 
-        ? (emp.baseSalary / (days * 8)) 
+        ? (emp.baseSalary / 240) 
         : (emp.hourlyRate || 150);
 
       const grossPay = Math.round(totalHours * hourlyRate);
@@ -77,7 +76,7 @@ exports.processPayroll = async (req, res) => {
           { 
             employeeId: eId, 
             date: new RegExp(`^${mKey}`), 
-            paymentStatus: 'unpaid' 
+            paymentStatus: { $ne: 'paid' } 
           },
           { paymentStatus: 'paid' }
         );
@@ -89,9 +88,20 @@ exports.processPayroll = async (req, res) => {
         throw err;
       }
     }
-    const paidEmployeeIds = newRecords.map((r) => r.employeeId);
+    // For employees who already had a record, but might have had missing paymentStatus updates 
+    // or newly added records/advances, we perform a cleanup update.
+    const allEmployeeIds = employees.map(e => e.employeeId.trim());
+    await Attendance.updateMany(
+      { 
+        employeeId: { $in: allEmployeeIds }, 
+        date: new RegExp(`^${monthKey.trim()}`), 
+        paymentStatus: { $ne: 'paid' } 
+      },
+      { paymentStatus: 'paid' }
+    );
+
     await Advance.updateMany(
-      { employeeId: { $in: paidEmployeeIds }, status: 'Pending' },
+      { employeeId: { $in: allEmployeeIds }, status: 'Pending' },
       { status: 'Deducted' }
     );
     await ActivityLog.create({

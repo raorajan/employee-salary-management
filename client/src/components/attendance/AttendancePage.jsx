@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useApp } from '../../context/AppContext';
 import AttendanceSummary from './AttendanceSummary';
 import AttendanceCalendar from './AttendanceCalendar';
 import AttendanceMarker from './AttendanceMarker';

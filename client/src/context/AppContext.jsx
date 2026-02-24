@@ -93,7 +93,7 @@ export function AppProvider({ children }) {
     }
     const id = generateEmployeeId();
     const monthlySalary = Number(data.hourlyRate) || 0;
-    const derivedRate = monthlySalary > 0 ? Math.round(monthlySalary / 240) : 150;
+    const derivedRate = monthlySalary > 0 ? (monthlySalary / 240) : 150;
     const emp = { 
         id, 
         name: data.name, 
@@ -188,7 +188,7 @@ export function AppProvider({ children }) {
             if (totalHours <= 0) return;
 
             const daysInMonth = new Date(monthKey.split('-')[0], monthKey.split('-')[1], 0).getDate();
-            const hourlyRate = emp.baseSalary ? (emp.baseSalary / (daysInMonth * 8)) : (emp.hourlyRate || 150);
+            const hourlyRate = emp.baseSalary ? (emp.baseSalary / 240) : (emp.hourlyRate || 150);
             const grossPay = Math.round(totalHours * hourlyRate);
             
             const pendingAdvances = advances.filter(a => a.employeeId === emp.id && a.status === 'Pending');
@@ -275,16 +275,16 @@ export function AppProvider({ children }) {
     };
   }, [attendance, employees]);
 
-  const getSalaryCalculation = useCallback((employeeId, totalHours, deductions) => {
+  const getSalaryCalculation = useCallback((employeeId, totalHours, deductions, customMonthKey) => {
     const emp = employees.find((e) => e.id === employeeId);
     if (!emp) return null;
 
-    const monthKey = new Date().toISOString().slice(0, 7); // Default to current month
+    const monthKey = customMonthKey || new Date().toISOString().slice(0, 7);
     const daysInMonth = new Date(monthKey.split('-')[0], monthKey.split('-')[1], 0).getDate();
     
     let hourlyRate = emp.hourlyRate || 150;
     if (emp.baseSalary) {
-      hourlyRate = emp.baseSalary / (daysInMonth * 8);
+      hourlyRate = emp.baseSalary / 240;
     }
 
     const grossPay = Math.round((totalHours || 0) * hourlyRate);
@@ -428,6 +428,7 @@ export function AppProvider({ children }) {
     activityLog,
     loading,
     apiError,
+    DEPARTMENTS,
     addEmployee,
     markAttendance,
     processPayroll,
