@@ -1,0 +1,29 @@
+services:
+  backend:
+    build: ./server
+    container_name: attendsalary-backend
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    ports:
+      - "4000:4000"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./client
+      args:
+        VITE_API_URL: /api
+    container_name: attendsalary-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
