@@ -67,10 +67,20 @@ function toFrontendAdvance(doc) {
 
 const STANDARD_HOURS = 8;
 const MONTHS = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const STANDARD_MONTHLY_HOURS = 240;
+
 
 function getMonthLabel(monthKey) {
   const [y, m] = monthKey.split('-').map(Number);
   return `${MONTHS[m]} ${y}`;
+}
+
+function getDaysInMonth(monthKey) {
+  const [y, m] = monthKey.split('-').map(Number);
+  // Date(y, m, 0) returns the last day of the month before m (where m is 1-indexed)
+  // Since m in getMonthLabel/monthKey seems to be 1-indexed (based on MONTHS array starting with empty string)
+  // we use m (next month) and day 0 to get current month's last day.
+  return new Date(y, m, 0).getDate();
 }
 
 module.exports = {
@@ -79,6 +89,8 @@ module.exports = {
   toFrontendAttendance,
   toFrontendSalaryRecord,
   toFrontendAdvance,
+  getDaysInMonth,
   STANDARD_HOURS,
+  STANDARD_MONTHLY_HOURS,
   getMonthLabel,
 };

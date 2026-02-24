@@ -26,14 +26,14 @@ export default function SalaryCalculator() {
   }, [selectedEmployee, monthKey, hoursFromAttendance, advances]);
 
   const calc = selectedEmployee && emp
-    ? getSalaryCalculation(selectedEmployee, totalHours, deductions)
+    ? getSalaryCalculation(selectedEmployee, totalHours, deductions, monthKey)
     : null;
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
       <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700">
         <h3 className="text-lg font-semibold dark:text-gray-100">Salary Calculator</h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">8h standard + overtime per day. Payment = Hours × Rate</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Payment = (Normal + Overtime Hours) × Hourly Rate. Hourly Rate = Monthly Salary / (Days in month × 8)</p>
       </div>
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -54,9 +54,15 @@ export default function SalaryCalculator() {
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none"
             >
               <option value="">Select employee</option>
-              {employees.map((e) => (
-                <option key={e.id} value={e.id}>{e.name} (₹{e.hourlyRate ?? Math.round((e.baseSalary || 40000) / 176)}/hr)</option>
-              ))}
+              {employees.map((e) => {
+                const days = new Date(monthKey.split('-')[0], monthKey.split('-')[1], 0).getDate();
+                const derivedRate = e.baseSalary ? Math.round(e.baseSalary / (days * 8)) : (e.hourlyRate || 0);
+                return (
+                  <option key={e.id} value={e.id}>
+                    {e.name} (₹{(e.baseSalary || 0).toLocaleString()}/mo · ₹{derivedRate}/hr)
+                  </option>
+                );
+              })}
             </select>
           </div>
         </div>

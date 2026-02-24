@@ -10,7 +10,7 @@ export default function EmployeeForm() {
     department: 'Engineering',
     role: '',
     address: '',
-    hourlyRate: 150,
+    hourlyRate: 0,
   });
 
   const handleChange = (e) => {
@@ -30,7 +30,7 @@ export default function EmployeeForm() {
         address: formData.address.trim(),
         hourlyRate: Number(formData.hourlyRate) || 150,
       });
-      setFormData({ name: '', email: '', department: 'Engineering', role: '', address: '', hourlyRate: 150 });
+      setFormData({ name: '', email: '', department: 'Engineering', role: '', address: '', hourlyRate: 0 });
     } finally {
       setSubmitting(false);
     }
@@ -43,7 +43,7 @@ export default function EmployeeForm() {
       department: 'Engineering',
       role: '',
       address: '',
-      hourlyRate: 150,
+      hourlyRate: 0,
     });
   };
 
@@ -85,7 +85,7 @@ export default function EmployeeForm() {
               onChange={handleChange}
               className="w-full px-4 py-2.5 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all appearance-none text-base sm:text-sm min-h-[44px] sm:min-h-0"
             >
-              {DEPARTMENTS.map((d) => (
+              {DEPARTMENTS?.map((d) => (
                 <option key={d.value} value={d.label}>{d.label}</option>
               ))}
             </select>
@@ -102,7 +102,7 @@ export default function EmployeeForm() {
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Hourly Rate (₹/hr) — Payment = Hours × Rate</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Month Salary (for 8hrs/day duty) — e.g. 13000</label>
             <input
               type="number"
               name="hourlyRate"

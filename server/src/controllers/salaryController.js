@@ -3,13 +3,14 @@ const Attendance = require('../models/Attendance');
 const SalaryRecord = require('../models/SalaryRecord');
 const Advance = require('../models/Advance');
 const ActivityLog = require('../models/ActivityLog');
-const { toFrontendSalaryRecord, STANDARD_HOURS, getMonthLabel } = require('../utils/helpers');
+const { toFrontendSalaryRecord, STANDARD_HOURS, getMonthLabel, STANDARD_MONTHLY_HOURS, getDaysInMonth } = require('../utils/helpers');
 
 async function getTotalHoursForPeriod(employeeId, monthKey) {
   const records = await Attendance.find({
     employeeId,
     date: new RegExp(`^${monthKey}`),
     status: { $in: ['present', 'late'] },
+    paymentStatus: 'unpaid',
   });
   return records.reduce((sum, a) => {
     const hours = a.workedHours !== undefined && a.workedHours !== null ? a.workedHours : STANDARD_HOURS;
@@ -48,7 +49,11 @@ exports.processPayroll = async (req, res) => {
       const totalHours = await getTotalHoursForPeriod(eId, mKey);
       if (totalHours <= 0) continue;
 
-      const hourlyRate = emp.hourlyRate ?? Math.round((emp.baseSalary || 40000) / 176);
+      const days = getDaysInMonth(mKey);
+      const hourlyRate = emp.baseSalary 
+        ? (emp.baseSalary / (days * 8)) 
+        : (emp.hourlyRate || 150);
+
       const grossPay = Math.round(totalHours * hourlyRate);
       const pendingAdvances = await Advance.find({ employeeId: eId, status: 'Pending' });
       const advanceDeduction = pendingAdvances.reduce((s, a) => s + a.amount, 0);
@@ -66,6 +71,16 @@ exports.processPayroll = async (req, res) => {
           date: payDateStr,
         });
         newRecords.push(record);
+
+        // Mark attendance as paid for this employee and month
+        await Attendance.updateMany(
+          { 
+            employeeId: eId, 
+            date: new RegExp(`^${mKey}`), 
+            paymentStatus: 'unpaid' 
+          },
+          { paymentStatus: 'paid' }
+        );
       } catch (err) {
         if (err.code === 11000) {
           console.log(`Skipping duplicate salary record for ${eId} - ${mKey}`);

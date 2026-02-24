@@ -38,7 +38,14 @@ export default function EmployeeList() {
                     <div>
                       <div className="font-medium text-gray-900 dark:text-gray-200">{emp.name}</div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{emp.id}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{emp.role} · {emp.department} · ₹{emp.hourlyRate ?? Math.round((emp.baseSalary || 40000) / 176)}/hr</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {emp.role} · {emp.department} · ₹{(emp.baseSalary || 0).toLocaleString()}/mo 
+                        (₹{(() => {
+                          const today = new Date();
+                          const days = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+                          return emp.baseSalary ? Math.round(emp.baseSalary / (days * 8)) : (emp.hourlyRate || 0);
+                        })()}/hr)
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${

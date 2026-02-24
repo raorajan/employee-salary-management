@@ -2,7 +2,7 @@ const Employee = require('../models/Employee');
 const Attendance = require('../models/Attendance');
 const Advance = require('../models/Advance');
 const ActivityLog = require('../models/ActivityLog');
-const { getNextEmployeeId, toFrontendEmployee } = require('../utils/helpers');
+const { getNextEmployeeId, toFrontendEmployee, getDaysInMonth } = require('../utils/helpers');
 
 exports.list = async (req, res) => {
   try {
@@ -16,7 +16,14 @@ exports.list = async (req, res) => {
 exports.create = async (req, res) => {
   try {
     const employeeId = await getNextEmployeeId();
-    const hourlyRate = Number(req.body.hourlyRate) || 150;
+    const monthlySalary = Number(req.body.hourlyRate) || 0;
+    
+    // We store the monthly salary as baseSalary. 
+    // hourlyRate is stored as a derived value for convenience (Salary / (Days * 8))
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const days = getDaysInMonth(currentMonth);
+    const derivedHourlyRate = monthlySalary > 0 ? Math.round(monthlySalary / (days * 8)) : 0;
+    
     const employee = new Employee({
       employeeId,
       name: req.body.name,
@@ -24,12 +31,12 @@ exports.create = async (req, res) => {
       department: req.body.department,
       role: req.body.role || '-',
       status: 'Active',
-      hourlyRate,
-      baseSalary: Math.round(hourlyRate * 176),
+      hourlyRate: derivedHourlyRate,
+      baseSalary: monthlySalary,
       address: req.body.address || '',
     });
     await employee.save();
-    await ActivityLog.create({ message: `New employee added: ${employee.name}` });
+    await ActivityLog.create({ message: `New employee added: ${employee.name} (Monthly: ₹${monthlySalary})` });
     res.status(201).json(toFrontendEmployee(employee));
   } catch (err) {
     res.status(500).json({ error: err.message });

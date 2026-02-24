@@ -16,6 +16,7 @@ export const api = {
     list: () => request('/employees'),
     create: (body) => request('/employees', { method: 'POST', body: JSON.stringify(body) }),
     remove: (id) => request(`/employees/${id}`, { method: 'DELETE' }),
+    update: (id, body) => request(`/employees/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   },
   attendance: {
     list: (params) => request('/attendance' + (params ? '?' + new URLSearchParams(params).toString() : '')),

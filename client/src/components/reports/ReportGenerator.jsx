@@ -83,7 +83,7 @@ export default function ReportGenerator() {
               onChange={(e) => handleDepartmentChange(e.target.value)}
               className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none"
             >
-              {DEPARTMENTS.map((d) => (
+              {DEPARTMENTS?.map((d) => (
                 <option key={d.value} value={d.value}>{d.label}</option>
               ))}
             </select>
