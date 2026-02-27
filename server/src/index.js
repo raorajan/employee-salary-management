@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+const authRoutes = require('./routes/authRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const salaryRoutes = require('./routes/salaryRoutes');
@@ -11,11 +12,15 @@ const activityRoutes = require('./routes/activityRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://rajan:kumar@cluster0.vvtoxbl.mongodb.net/flipkart?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://rajan:kumar@cluster0.vvtoxbl.mongodb.net/attendance_db?retryWrites=true&w=majority';
 
 app.use(cors());
 app.use(express.json());
 
+// Auth routes (public)
+app.use('/api/auth', authRoutes);
+
+// Protected routes (will add authentication middleware later)
 app.use('/api/employees', employeeRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/salary', salaryRoutes);
