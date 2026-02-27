@@ -1,15 +1,45 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
+// Get auth token from localStorage
+function getAuthToken() {
+  return localStorage.getItem('token');
+}
+
 async function request(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
+  const token = getAuthToken();
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+  
+  // Add auth token if available
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
   const res = await fetch(url, {
     ...options,
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers,
   });
+  
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || res.statusText);
+  if (!res.ok) {
+    const error = new Error(data.message || data.error || res.statusText);
+    error.response = { data, status: res.status };
+    throw error;
+  }
   return data;
 }
+
+// Auth API
+export const authAPI = {
+  register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+  login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  getMe: () => request('/auth/me'),
+  changePassword: (body) => request('/auth/change-password', { method: 'POST', body: JSON.stringify(body) }),
+};
 
 export const api = {
   employees: {

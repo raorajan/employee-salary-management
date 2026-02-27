@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useApp } from './context/AppContext'
+import { useAuth } from './hooks/useAuth'
 import Header from './components/common/Header'
 import Sidebar from './components/common/Sidebar'
 import Dashboard from './components/dashboard/Dashboard'
@@ -9,16 +10,47 @@ import EmployeeForm from './components/employees/EmployeeForm'
 import AttendancePage from './components/attendance/AttendancePage'
 import SalariesPage from './components/salary/SalariesPage'
 import ReportsPage from './components/reports/ReportsPage'
+import AuthPage from './components/auth/AuthPage'
+
+// Protected Route wrapper
+function ProtectedRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-indigo-600 dark:text-indigo-400 font-medium">Loading...</div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+}
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { loading, apiError } = useApp();
+  const { isAuthenticated } = useAuth();
   const [editingEmployee, setEditingEmployee] = useState(null);
 
   const handleEdit = (emp) => {
     setEditingEmployee(emp);
     document.getElementById('add-employee-form')?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Show auth page if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="/login" element={<AuthPage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-x-hidden">
