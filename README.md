@@ -30,11 +30,6 @@
 - [Node.js](https://nodejs.org/) & [Express.js](https://expressjs.com/)
 - [MongoDB](https://www.mongodb.com/) / Mongoose (Cloud Atlas database)
 
-**Deployment & DevOps:**
-- **Docker & Docker Compose:** Containerized microservices (Frontend mapped via Nginx, Backend via Node)
-- **Nginx:** Reverse Proxy & static file serving
-- **Certbot / Let's Encrypt:** Automated Free SSL Certificates
-
 ---
 
 ## 🚀 Getting Started (Local Development)
@@ -82,28 +77,6 @@ npm run dev
 ```
 
 The app will be available at `http://localhost:5173`.
-
----
-
-## 🐳 Deployment (Docker)
-
-To deploy the application securely on a cloud Linux server (e.g., Ubuntu on AWS/E2E/DigitalOcean):
-
-1. **Clone & Setup Env:**
-   ```bash
-   git clone https://github.com/raorajan/employee-salary-management.git AttendSalary
-   cd AttendSalary
-   echo "PORT=4000\nMONGODB_URI=your_mongo_uri" > server/.env
-   ```
-2. **Launch with Docker Compose:**
-   ```bash
-   sudo docker compose up -d --build
-   ```
-   *The frontend will map to port `8080`, and it securely reverse-proxies API calls directly to the Docker backend.*
-3. **Configure Nginx & SSL (Host Level):**
-   * Map your domain to your server's IP via an A-Record.
-   * Forward domain traffic from `80` onto local port `8080`.
-   * Secure with Free Let's Encrypt SSL using `certbot`.
 
 ---
 
