@@ -22,6 +22,7 @@ jobs:
       - name: Build Frontend Client
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_FRONTEND_URL: ${{ secrets.VITE_FRONTEND_URL }}
         run: |
           cd client
           npm install

@@ -11,9 +11,14 @@ const registerValidation = [
     .isLength({ min: 3, max: 30 })
     .withMessage('Username must be 3-30 characters'),
   body('email')
+    .optional()
     .isEmail()
     .normalizeEmail()
     .withMessage('Please enter a valid email'),
+  body('mobile')
+    .optional()
+    .isMobilePhone()
+    .withMessage('Please enter a valid mobile number'),
   body('password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters'),
@@ -24,10 +29,9 @@ const registerValidation = [
 ];
 
 const loginValidation = [
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please enter a valid email'),
+  body('identifier')
+    .notEmpty()
+    .withMessage('Email or mobile number is required'),
   body('password')
     .notEmpty()
     .withMessage('Password is required')

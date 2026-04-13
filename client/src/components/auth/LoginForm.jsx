@@ -3,7 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 export default function LoginForm({ onSwitchToRegister }) {
   const [formData, setFormData] = useState({
-    email: '',
+    identifier: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +18,7 @@ export default function LoginForm({ onSwitchToRegister }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(formData.email, formData.password);
+    await login(formData.identifier, formData.password);
   };
 
   return (
@@ -48,7 +48,7 @@ export default function LoginForm({ onSwitchToRegister }) {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Email Address
+              Email or Mobile Number
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -57,13 +57,13 @@ export default function LoginForm({ onSwitchToRegister }) {
                 </svg>
               </div>
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                name="identifier"
+                value={formData.identifier}
                 onChange={handleChange}
                 required
                 className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                placeholder="you@example.com"
+                placeholder="you@example.com or 1234567890"
               />
             </div>
           </div>

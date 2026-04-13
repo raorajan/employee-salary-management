@@ -25,11 +25,22 @@ exports.register = async (req, res) => {
       });
     }
 
-    const { username, email, password, role } = req.body;
+    const { username, email, mobile, password, role } = req.body;
+
+    // Validate that at least email or mobile is provided
+    if (!email && !mobile) {
+      return res.status(400).json({
+        success: false,
+        message: 'Either email or mobile number is required'
+      });
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({
-      $or: [{ email }, { username }]
+      $or: [
+        email ? { email } : {},
+        mobile ? { mobile } : {}
+      ].filter(obj => Object.keys(obj).length > 0)
     });
 
     if (existingUser) {
@@ -47,6 +58,7 @@ exports.register = async (req, res) => {
     const user = new User({
       username,
       email,
+      mobile,
       passwordHash,
       role: role || 'staff'
     });
@@ -93,10 +105,14 @@ exports.login = async (req, res) => {
       });
     }
 
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Determine if identifier is email or mobile
+    const isEmail = identifier.includes('@');
+    const searchQuery = isEmail ? { email: identifier } : { mobile: identifier };
+
+    // Find user by email or mobile
+    const user = await User.findOne(searchQuery);
 
     if (!user) {
       return res.status(401).json({
