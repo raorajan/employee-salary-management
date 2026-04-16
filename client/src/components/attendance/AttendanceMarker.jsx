@@ -5,7 +5,7 @@ const STANDARD_HOURS = 8;
 const LABOUR_OVERTIME_DEFAULT = 4;
 
 export default function AttendanceMarker({ selectedDate, onDateSelect, onDateReset, selectedEmployee, onEmployeeSelect }) {
-  const { employees, markAttendance } = useApp();
+  const { employees, attendance, markAttendance } = useApp();
   const [status, setStatus] = useState('present');
   const [overtimeHours, setOvertimeHours] = useState(4);
   const [workedHours, setWorkedHours] = useState(STANDARD_HOURS);
@@ -18,14 +18,25 @@ export default function AttendanceMarker({ selectedDate, onDateSelect, onDateRes
 
   const isToday = selectedDate === new Date().toISOString().slice(0, 10);
 
+  // Load existing data when selection changes
   useEffect(() => {
-    if (showOvertime) setOvertimeHours(4);
-    
-    // Reset worked hours to standard when switching away from late or changing employee
-    if (!showWorkedHours) setWorkedHours(STANDARD_HOURS);
-  }, [selectedEmployee, status, isLabour, showOvertime, showWorkedHours]);
+    if (selectedEmployee && selectedDate) {
+      const existing = attendance.find(a => a.employeeId === selectedEmployee && a.date === selectedDate);
+      if (existing) {
+        setStatus(existing.status);
+        setOvertimeHours(existing.overtimeHours || 0);
+        setWorkedHours(existing.workedHours || STANDARD_HOURS);
+      } else {
+        // Default resets for new entries
+        setStatus('present');
+        setOvertimeHours(4);
+        setWorkedHours(STANDARD_HOURS);
+      }
+    }
+  }, [selectedEmployee, selectedDate, attendance]);
 
   const handleMark = async () => {
+
     if (!selectedEmployee) {
       setMessage('Please select an employee');
       return;

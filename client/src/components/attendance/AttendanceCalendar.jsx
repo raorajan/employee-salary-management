@@ -97,9 +97,17 @@ export default function AttendanceCalendar({ selectedDate, onDateSelect, selecte
                     }`}
                   >
                     <span className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-gray-200'}`}>{day}</span>
-                    {status && (
-                      <span className={`mt-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`} title={status} />
-                    )}
+                    <div className="flex gap-0.5 mt-0.5 min-h-[6px]">
+                      {status && (
+                        <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} title={status} />
+                      )}
+                      {record?.overtimeHours > 0 && (
+                        <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold leading-none" title={`Overtime: ${record.overtimeHours}h`}>
+                          +{record.overtimeHours}h
+                        </span>
+                      )}
+                    </div>
+
                   </div>
                 );
               })}
