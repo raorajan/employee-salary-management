@@ -25,6 +25,15 @@ async function request(endpoint, options = {}) {
   });
   
   const data = await res.json().catch(() => ({}));
+  
+  if (res.status === 401 && !url.includes('/auth/login')) {
+    // Session expired or invalid token
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // We don't throw here so the app can handle the redirect via isAuthenticated state
+    // But throwing an error is usually better so the caller knows it failed
+  }
+
   if (!res.ok) {
     const error = new Error(data.message || data.error || res.statusText);
     error.response = { data, status: res.status };
@@ -32,6 +41,7 @@ async function request(endpoint, options = {}) {
   }
   return data;
 }
+
 
 // Auth API
 export const authAPI = {

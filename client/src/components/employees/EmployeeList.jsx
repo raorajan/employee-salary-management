@@ -82,7 +82,13 @@ export default function EmployeeList({ onEdit }) {
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                         {emp.role}
                       </span>
+                      {emp.mobile && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">
+                          {emp.mobile}
+                        </span>
+                      )}
                     </div>
+
 
                     {/* Salary + Actions row */}
                     <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-100 dark:border-gray-700/50">
@@ -126,7 +132,9 @@ export default function EmployeeList({ onEdit }) {
                     <th className="px-6 py-4 font-semibold">Name</th>
                     <th className="px-6 py-4 font-semibold">Department</th>
                     <th className="px-6 py-4 font-semibold">Role</th>
+                    <th className="px-6 py-4 font-semibold">Mobile</th>
                     <th className="px-6 py-4 font-semibold text-right">Status</th>
+
                     <th className="px-6 py-4 font-semibold w-24"></th>
                   </tr>
                 </thead>
@@ -137,7 +145,9 @@ export default function EmployeeList({ onEdit }) {
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{emp.name}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{emp.department}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{emp.role}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{emp.mobile || '-'}</td>
                       <td className="px-6 py-4 text-sm text-right">
+
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           emp.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                         }`}>

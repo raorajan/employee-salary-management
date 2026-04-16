@@ -6,32 +6,38 @@ export default function EmployeeForm({ editingEmployee, onCancel }) {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
     department: 'Engineering',
+
     role: '',
-    address: '',
+    mobile: '',
     hourlyRate: 0,
   });
+
+
 
   useEffect(() => {
     if (editingEmployee) {
       setFormData({
         name: editingEmployee.name,
-        email: editingEmployee.email || '',
         department: editingEmployee.department,
+
         role: editingEmployee.role,
-        address: editingEmployee.address || '',
+        mobile: editingEmployee.mobile || '',
         hourlyRate: editingEmployee.baseSalary || 0,
       });
+
+
     } else {
       setFormData({
         name: '',
-        email: '',
         department: 'Engineering',
+
         role: '',
-        address: '',
+        mobile: '',
         hourlyRate: 0,
       });
+
+
     }
   }, [editingEmployee]);
 
@@ -47,24 +53,31 @@ export default function EmployeeForm({ editingEmployee, onCancel }) {
       if (editingEmployee) {
         await updateEmployee(editingEmployee.id, {
           name: formData.name.trim(),
-          email: formData.email.trim(),
           department: formData.department,
+
           role: formData.role.trim() || '-',
-          address: formData.address.trim(),
+          mobile: formData.mobile.trim(),
           hourlyRate: Number(formData.hourlyRate),
         });
+
+
         onCancel();
       } else {
         await addEmployee({
           name: formData.name.trim(),
-          email: formData.email.trim(),
           department: formData.department,
           role: formData.role.trim() || '-',
-          address: formData.address.trim(),
+          mobile: formData.mobile.trim(),
           hourlyRate: Number(formData.hourlyRate) || 150,
         });
+
+
+
       }
-      setFormData({ name: '', email: '', department: 'Engineering', role: '', address: '', hourlyRate: 0 });
+      setFormData({ name: '', department: 'Engineering', role: '', mobile: '', hourlyRate: 0 });
+
+
+
     } finally {
       setSubmitting(false);
     }
@@ -76,12 +89,14 @@ export default function EmployeeForm({ editingEmployee, onCancel }) {
     } else {
       setFormData({
         name: '',
-        email: '',
         department: 'Engineering',
         role: '',
-        address: '',
+        mobile: '',
         hourlyRate: 0,
       });
+
+
+
     }
   };
 
@@ -113,17 +128,6 @@ export default function EmployeeForm({ editingEmployee, onCancel }) {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2.5 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-base sm:text-sm"
-              placeholder="Enter email address"
-            />
-          </div>
-          <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Department</label>
             <select
               name="department"
@@ -136,6 +140,7 @@ export default function EmployeeForm({ editingEmployee, onCancel }) {
               ))}
             </select>
           </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
             <input
@@ -147,6 +152,18 @@ export default function EmployeeForm({ editingEmployee, onCancel }) {
               placeholder="Enter role"
             />
           </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Mobile Number</label>
+            <input
+              type="tel"
+              name="mobile"
+              value={formData.mobile}
+              onChange={handleChange}
+              className="w-full px-4 py-2.5 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-base sm:text-sm"
+              placeholder="Enter mobile number"
+            />
+          </div>
+
           <div className="space-y-2 md:col-span-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Monthly Salary <span className="text-xs font-normal text-gray-400">(8hrs/day, e.g. 13000)</span></label>
             <input
@@ -160,19 +177,8 @@ export default function EmployeeForm({ editingEmployee, onCancel }) {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
-          <textarea
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            className="w-full px-4 py-2.5 sm:py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-base sm:text-sm"
-            rows="3"
-            placeholder="Enter full address"
-          />
-        </div>
-
         <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
+
           <button
             type="button"
             onClick={handleCancel}

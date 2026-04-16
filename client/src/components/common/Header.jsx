@@ -28,8 +28,9 @@ export default function Header({ toggleSidebar }) {
           <div className="flex items-center gap-2 sm:gap-4">
             <button className="px-3 py-2 sm:py-1.5 rounded-md bg-indigo-600 text-white text-sm min-h-[36px] sm:min-h-0 hover:bg-indigo-700 active:bg-indigo-800 transition-colors">New</button>
             <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 hidden sm:block">
-              {user?.username || 'Admin'}
+              {user?.email || user?.mobile || 'Admin'}
             </div>
+
             <button 
               onClick={handleLogout}
               className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"

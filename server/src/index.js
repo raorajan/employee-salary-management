@@ -9,6 +9,8 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 const salaryRoutes = require('./routes/salaryRoutes');
 const advanceRoutes = require('./routes/advanceRoutes');
 const activityRoutes = require('./routes/activityRoutes');
+const { authenticate } = require('./middleware/auth');
+
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -20,12 +22,13 @@ app.use(express.json());
 // Auth routes (public)
 app.use('/api/auth', authRoutes);
 
-// Protected routes (will add authentication middleware later)
-app.use('/api/employees', employeeRoutes);
-app.use('/api/attendance', attendanceRoutes);
-app.use('/api/salary', salaryRoutes);
-app.use('/api/advances', advanceRoutes);
-app.use('/api/activity', activityRoutes);
+// Protected routes
+app.use('/api/employees', authenticate, employeeRoutes);
+app.use('/api/attendance', authenticate, attendanceRoutes);
+app.use('/api/salary', authenticate, salaryRoutes);
+app.use('/api/advances', authenticate, advanceRoutes);
+app.use('/api/activity', authenticate, activityRoutes);
+
 
 app.get('/api', (req, res) => res.json({ ok: true, message: 'AttendSalary API' }));
 

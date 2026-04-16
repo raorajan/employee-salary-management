@@ -25,7 +25,8 @@ exports.register = async (req, res) => {
       });
     }
 
-    const { username, email, mobile, password, role } = req.body;
+    const { email, mobile, password, role } = req.body;
+
 
     // Validate that at least email or mobile is provided
     if (!email && !mobile) {
@@ -46,9 +47,10 @@ exports.register = async (req, res) => {
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        message: 'User with this email or username already exists'
+        message: 'A user with this email or mobile already exists'
       });
     }
+
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
@@ -56,12 +58,12 @@ exports.register = async (req, res) => {
 
     // Create new user
     const user = new User({
-      username,
       email,
       mobile,
       passwordHash,
       role: role || 'staff'
     });
+
 
     await user.save();
 
@@ -149,10 +151,11 @@ exports.login = async (req, res) => {
         token,
         user: {
           id: user._id,
-          username: user.username,
           email: user.email,
+          mobile: user.mobile,
           role: user.role
         }
+
       }
     });
   } catch (error) {

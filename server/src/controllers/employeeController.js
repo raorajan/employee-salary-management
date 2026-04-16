@@ -25,14 +25,16 @@ exports.create = async (req, res) => {
     const employee = new Employee({
       employeeId,
       name: req.body.name,
-      email: req.body.email || '',
       department: req.body.department,
+
       role: req.body.role || '-',
       status: 'Active',
       hourlyRate: derivedHourlyRate,
       baseSalary: monthlySalary,
-      address: req.body.address || '',
+      mobile: req.body.mobile || '',
     });
+
+
     await employee.save();
     await ActivityLog.create({ message: `New employee added: ${employee.name} (Monthly: ₹${monthlySalary})` });
     res.status(201).json(toFrontendEmployee(employee));

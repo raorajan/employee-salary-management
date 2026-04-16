@@ -14,13 +14,13 @@ function toFrontendEmployee(doc) {
     id: o.employeeId,
     employeeId: o.employeeId,
     name: o.name,
-    email: o.email || '',
     department: o.department,
+
     role: o.role || '-',
     status: o.status || 'Active',
     hourlyRate: o.hourlyRate,
     baseSalary: o.baseSalary,
-    address: o.address || '',
+    mobile: o.mobile || '',
   };
 }
 

@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { api } from '../api/client';
+import { useAuth } from '../hooks/useAuth';
+
 
 const DEPARTMENTS = [
   { value: 'engineering', label: 'Engineering' },
@@ -20,44 +22,57 @@ function generateEmployeeId() {
 const USE_API = import.meta.env.VITE_USE_API !== 'false';
 
 export function AppProvider({ children }) {
+  const { isAuthenticated } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [salaryHistory, setSalaryHistory] = useState([]);
   const [advances, setAdvances] = useState([]);
   const [activityLog, setActivityLog] = useState([]);
-  const [loading, setLoading] = useState(USE_API);
+  const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState(null);
 
+  const fetchAll = useCallback(async () => {
+    if (!USE_API || !isAuthenticated) return;
+    try {
+      setApiError(null);
+      setLoading(true);
+      const [empRes, attRes, salRes, advRes, actRes] = await Promise.all([
+        api.employees.list(),
+        api.attendance.list(),
+        api.salary.list(),
+        api.advances.list(),
+        api.activity.list().catch(() => []),
+      ]);
+      setEmployees(Array.isArray(empRes) ? empRes.map((e) => ({ ...e, id: e.id || e.employeeId })) : []);
+      setAttendance(Array.isArray(attRes) ? attRes : []);
+      setSalaryHistory(Array.isArray(salRes) ? salRes : []);
+      setAdvances(Array.isArray(advRes) ? advRes : []);
+      setActivityLog(Array.isArray(actRes) ? actRes : []);
+    } catch (err) {
+      setApiError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
-    if (!USE_API) return;
-    const fetchAll = async () => {
-      try {
-        setApiError(null);
-        setLoading(true);
-        const [empRes, attRes, salRes, advRes, actRes] = await Promise.all([
-          api.employees.list(),
-          api.attendance.list(),
-          api.salary.list(),
-          api.advances.list(),
-          api.activity.list().catch(() => []),
-        ]);
-        setEmployees(Array.isArray(empRes) ? empRes.map((e) => ({ ...e, id: e.id || e.employeeId })) : []);
-        setAttendance(Array.isArray(attRes) ? attRes : []);
-        setSalaryHistory(Array.isArray(salRes) ? salRes : []);
-        setAdvances(Array.isArray(advRes) ? advRes : []);
-        setActivityLog(Array.isArray(actRes) ? actRes : []);
-      } catch (err) {
-        setApiError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAll();
-  }, []);
+    if (isAuthenticated) {
+      fetchAll();
+    } else {
+      // Clear data on logout
+      setEmployees([]);
+      setAttendance([]);
+      setSalaryHistory([]);
+      setAdvances([]);
+      setActivityLog([]);
+      setApiError(null);
+    }
+  }, [isAuthenticated, fetchAll]);
 
   const refetch = useCallback(async () => {
-    if (!USE_API) return;
+    if (!USE_API || !isAuthenticated) return;
     try {
+
       const [empRes, attRes, salRes, advRes, actRes] = await Promise.all([
         api.employees.list(),
         api.attendance.list(),
@@ -71,7 +86,8 @@ export function AppProvider({ children }) {
       setAdvances(Array.isArray(advRes) ? advRes : []);
       setActivityLog(Array.isArray(actRes) ? actRes : []);
     } catch (_) {}
-  }, []);
+  }, [isAuthenticated]);
+
 
   const logActivity = useCallback((message) => {
     setActivityLog((prev) => [{ id: ++activityCounter, message, timestamp: new Date() }, ...prev].slice(0, 20));
@@ -100,13 +116,16 @@ export function AppProvider({ children }) {
         department: data.department, 
         role: data.role || '-', 
         status: 'Active', 
+        mobile: data.mobile || '',
         hourlyRate: derivedRate, 
         baseSalary: monthlySalary 
     };
+
     setEmployees((prev) => [...prev, emp]);
     logActivity(`New employee added: ${emp.name} (Monthly: ₹${monthlySalary})`);
     return id;
-  }, [logActivity, refetch]);
+  }, [isAuthenticated, logActivity, refetch]);
+
 
   const removeEmployee = useCallback(async (id) => {
     if (USE_API) {
@@ -121,7 +140,8 @@ export function AppProvider({ children }) {
       setEmployees((prev) => prev.filter((e) => e.id !== id));
       logActivity(`Employee removed: ${id}`);
     }
-  }, [logActivity, refetch]);
+  }, [isAuthenticated, logActivity, refetch]);
+
 
   const updateEmployee = useCallback(async (id, data) => {
     if (USE_API) {
@@ -136,7 +156,8 @@ export function AppProvider({ children }) {
       setEmployees((prev) => prev.map((e) => (e.id === id ? { ...e, ...data } : e)));
       logActivity(`Employee updated: ${data.name}`);
     }
-  }, [logActivity, refetch]);
+  }, [isAuthenticated, logActivity, refetch]);
+
 
   const markAttendance = useCallback(async (employeeId, date, status, overtimeHours = 0, workedHours = null) => {
     const data = { employeeId, date, status, overtimeHours, workedHours };
@@ -156,7 +177,8 @@ export function AppProvider({ children }) {
       const emp = employees.find(e => e.id === employeeId);
       logActivity(`Attendance: ${emp?.name || employeeId} marked ${status}`);
     }
-  }, [employees, logActivity, refetch]);
+  }, [isAuthenticated, employees, logActivity, refetch]);
+
 
   const getTotalHoursForPeriod = useCallback((employeeId, monthKey) => {
     return attendance
@@ -226,7 +248,8 @@ export function AppProvider({ children }) {
             logActivity(`Payroll processed for ${newRecords.length} employees`);
         }
     }
-  }, [employees, attendance, advances, getTotalHoursForPeriod, logActivity, refetch]);
+  }, [isAuthenticated, employees, attendance, advances, getTotalHoursForPeriod, logActivity, refetch]);
+
   
   const getAttendanceByDayForMonth = useCallback((year, month, employeeId) => {
     const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
@@ -307,7 +330,8 @@ export function AppProvider({ children }) {
       setAdvances(prev => [{ ...data, id, employeeName: emp?.name, status: 'Pending' }, ...prev]);
       logActivity(`Advance requested: ₹${data.amount} for ${emp?.name}`);
     }
-  }, [employees, logActivity, refetch]);
+  }, [isAuthenticated, employees, logActivity, refetch]);
+
 
   const getReportData = useCallback((reportType, monthKey, department, employeeId) => {
     const targetEmployees = employees.filter((emp) => {
