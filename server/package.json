@@ -1,5 +1,6 @@
 {
-  "name": "attendsalary-server",
+  "name": "ranjitenterprises-server",
+
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {

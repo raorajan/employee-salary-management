@@ -30,7 +30,8 @@ app.use('/api/advances', authenticate, advanceRoutes);
 app.use('/api/activity', authenticate, activityRoutes);
 
 
-app.get('/api', (req, res) => res.json({ ok: true, message: 'AttendSalary API' }));
+app.get('/api', (req, res) => res.json({ ok: true, message: 'RanjitEnterprises API' }));
+
 
 app.use((err, req, res, next) => {
   console.error(err);

@@ -12,35 +12,28 @@ import SalariesPage from './components/salary/SalariesPage'
 import ReportsPage from './components/reports/ReportsPage'
 import AuthPage from './components/auth/AuthPage'
 
-// Protected Route wrapper
-function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-indigo-600 dark:text-indigo-400 font-medium">Loading...</div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return children;
-}
-
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { loading, apiError } = useApp();
-  const { isAuthenticated } = useAuth();
+  const { loading: apiLoading, apiError } = useApp();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [editingEmployee, setEditingEmployee] = useState(null);
 
   const handleEdit = (emp) => {
     setEditingEmployee(emp);
     document.getElementById('add-employee-form')?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Show verifying session while checking token on refresh
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Verifying session...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show auth page if not authenticated
   if (!isAuthenticated) {
@@ -58,7 +51,7 @@ function App() {
       <div className="flex pt-3 sm:pt-4 md:pt-6 relative px-3 sm:px-4 md:px-6 gap-0 md:gap-6 min-h-0">
         <Sidebar isOpen={isSidebarOpen} closeSidebar={() => setIsSidebarOpen(false)} />
         <main className="flex-1 min-w-0 w-full overflow-x-hidden pb-6 sm:pb-8 md:pb-12 relative">
-          {loading && (
+          {apiLoading && (
             <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex items-center justify-center z-30">
               <div className="text-indigo-600 dark:text-indigo-400 font-medium">Loading...</div>
             </div>

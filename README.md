@@ -1,8 +1,9 @@
-# 📊 AttendSalary - Employee & Payroll Management System
+# 📊 RanjitEnterprises - Employee & Payroll Management System
 
-![AttendSalary](client/public/favicon.svg) <!-- Replace with a wide banner image if you have one later! -->
+![RanjitEnterprises](client/public/favicon.svg) <!-- Replace with a wide banner image if you have one later! -->
 
-**AttendSalary** is a modern, responsive, and full-stack HR and Payroll Management System built on the MERN stack. Designed with a mobile-first approach, it simplifies tracking employee attendance, managing salaries, handling advances, and generating detailed reports.
+**RanjitEnterprises** is a modern, responsive, and full-stack HR and Payroll Management System built on the MERN stack. Designed with a mobile-first approach, it simplifies tracking employee attendance, managing salaries, handling advances, and generating detailed reports.
+
 
 *Live Demo:* [https://ranjitkumar.raorajan.pro](https://ranjitkumar.raorajan.pro)
 

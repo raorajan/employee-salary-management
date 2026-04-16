@@ -6,10 +6,6 @@ const { authenticate } = require('../middleware/auth');
 
 // Validation rules
 const registerValidation = [
-  body('username')
-    .trim()
-    .isLength({ min: 3, max: 30 })
-    .withMessage('Username must be 3-30 characters'),
   body('email')
     .optional()
     .isEmail()
