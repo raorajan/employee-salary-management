@@ -210,8 +210,9 @@ export function AppProvider({ children }) {
             if (totalHours <= 0) return;
 
             const daysInMonth = new Date(monthKey.split('-')[0], monthKey.split('-')[1], 0).getDate();
-            const hourlyRate = emp.baseSalary ? (emp.baseSalary / 240) : (emp.hourlyRate || 150);
-            const grossPay = Math.round(totalHours * hourlyRate);
+            const hourlyRate = emp.baseSalary ? Math.floor(emp.baseSalary / (daysInMonth * 8)) : (emp.hourlyRate || 150);
+            const grossPay = Math.floor(totalHours * hourlyRate);
+
             
             const pendingAdvances = advances.filter(a => a.employeeId === emp.id && a.status === 'Pending');
             const deduction = pendingAdvances.reduce((s, a) => s + a.amount, 0);
@@ -307,10 +308,11 @@ export function AppProvider({ children }) {
     
     let hourlyRate = emp.hourlyRate || 150;
     if (emp.baseSalary) {
-      hourlyRate = emp.baseSalary / 240;
+      hourlyRate = Math.floor(emp.baseSalary / (daysInMonth * 8));
     }
 
-    const grossPay = Math.round((totalHours || 0) * hourlyRate);
+    const grossPay = Math.floor((totalHours || 0) * hourlyRate);
+
     const net = grossPay - (deductions || 0);
     return { 
         totalHours: totalHours || 0, 

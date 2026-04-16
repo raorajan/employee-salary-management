@@ -74,14 +74,17 @@ export default function SalaryCalculator() {
             >
               <option value="">Select employee</option>
               {employees.map((e) => {
-                const derivedRate = e.baseSalary ? (e.baseSalary / 240) : (e.hourlyRate || 0);
-                const displayRate = Math.round(derivedRate * 100) / 100;
+                const daysInMonth = new Date(monthKey.split('-')[0], monthKey.split('-')[1], 0).getDate();
+                const totalMonthHours = daysInMonth * 8;
+                const derivedRate = e.baseSalary ? Math.floor(e.baseSalary / totalMonthHours) : (e.hourlyRate || 0);
+                const displayRate = derivedRate;
                 return (
                   <option key={e.id} value={e.id}>
                     {e.name} (₹{(e.baseSalary || 0).toLocaleString()}/mo · ₹{displayRate}/hr)
                   </option>
                 );
               })}
+
             </select>
           </div>
         </div>

@@ -49,11 +49,13 @@ exports.processPayroll = async (req, res) => {
       const totalHours = await getTotalHoursForPeriod(eId, mKey);
       if (totalHours <= 0) continue;
 
+      const daysInMonth = getDaysInMonth(mKey);
       const hourlyRate = emp.baseSalary 
-        ? (emp.baseSalary / 240) 
+        ? Math.floor(emp.baseSalary / (daysInMonth * 8)) 
         : (emp.hourlyRate || 150);
 
-      const grossPay = Math.round(totalHours * hourlyRate);
+      const grossPay = Math.floor(totalHours * hourlyRate);
+
       const pendingAdvances = await Advance.find({ employeeId: eId, status: 'Pending' });
       const advanceDeduction = pendingAdvances.reduce((s, a) => s + a.amount, 0);
       const netSalary = Math.max(0, grossPay - advanceDeduction);
