@@ -9,6 +9,7 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 const salaryRoutes = require('./routes/salaryRoutes');
 const advanceRoutes = require('./routes/advanceRoutes');
 const activityRoutes = require('./routes/activityRoutes');
+const whatsappRoutes = require('./routes/whatsappRoutes');
 const { authenticate } = require('./middleware/auth');
 
 
@@ -28,6 +29,7 @@ app.use('/api/attendance', authenticate, attendanceRoutes);
 app.use('/api/salary', authenticate, salaryRoutes);
 app.use('/api/advances', authenticate, advanceRoutes);
 app.use('/api/activity', authenticate, activityRoutes);
+app.use('/api/whatsapp', authenticate, whatsappRoutes);
 
 
 app.get('/api', (req, res) => res.json({ ok: true, message: 'RanjitEnterprises API' }));
@@ -38,9 +40,22 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message || 'Internal server error' });
 });
 
+const whatsappService = require('./services/whatsappService');
+
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('MongoDB connected');
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
   })
   .catch((err) => console.error('MongoDB connection error:', err));
+
+// Initialize WhatsApp independently so it doesn't crash the main server
+setTimeout(() => {
+    try {
+        whatsappService.initialize();
+    } catch (err) {
+        console.error('Initial WhatsApp startup failed:', err.message);
+    }
+}, 5000);
+
+

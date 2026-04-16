@@ -5,6 +5,7 @@ export default function Dashboard() {
   const { employees, getTodayStats, salaryHistory, advances, activityLog, getOvertimeThisWeek } = useApp();
   const todayStats = getTodayStats();
 
+
   const pendingSalaries = employees.filter((emp) => {
     const monthKey = new Date().toISOString().slice(0, 7);
     const paid = salaryHistory.some((s) => s.employeeId === emp.id && s.monthKey === monthKey);
@@ -86,6 +87,8 @@ export default function Dashboard() {
           </p>
         </div>
       </div>
+
+
 
       {/* Stat Cards - 2x2 grid on mobile, 4 col on desktop */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

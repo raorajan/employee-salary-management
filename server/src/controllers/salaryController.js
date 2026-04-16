@@ -3,7 +3,11 @@ const Attendance = require('../models/Attendance');
 const SalaryRecord = require('../models/SalaryRecord');
 const Advance = require('../models/Advance');
 const ActivityLog = require('../models/ActivityLog');
+const whatsappService = require('../services/whatsappService');
 const { toFrontendSalaryRecord, STANDARD_HOURS, getMonthLabel, STANDARD_MONTHLY_HOURS, getDaysInMonth } = require('../utils/helpers');
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 
 async function getTotalHoursForPeriod(employeeId, monthKey) {
   const records = await Attendance.find({
@@ -12,11 +16,17 @@ async function getTotalHoursForPeriod(employeeId, monthKey) {
     status: { $in: ['present', 'late'] },
     paymentStatus: { $ne: 'paid' },
   });
-  return records.reduce((sum, a) => {
-    const hours = a.workedHours !== undefined && a.workedHours !== null ? a.workedHours : STANDARD_HOURS;
-    return sum + hours + (a.overtimeHours || 0);
-  }, 0);
+
+  return records.reduce((acc, a) => {
+    const reg = a.workedHours !== undefined && a.workedHours !== null ? a.workedHours : STANDARD_HOURS;
+    const ot = a.overtimeHours || 0;
+    acc.regular += reg;
+    acc.overtime += ot;
+    acc.total += (reg + ot);
+    return acc;
+  }, { total: 0, regular: 0, overtime: 0 });
 }
+
 
 exports.list = async (req, res) => {
   try {
@@ -46,15 +56,17 @@ exports.processPayroll = async (req, res) => {
       const existing = await SalaryRecord.findOne({ employeeId: eId, monthKey: mKey });
       if (existing) continue;
 
-      const totalHours = await getTotalHoursForPeriod(eId, mKey);
-      if (totalHours <= 0) continue;
+      const hoursBreakdown = await getTotalHoursForPeriod(eId, mKey);
+      if (hoursBreakdown.total <= 0) continue;
 
       const daysInMonth = getDaysInMonth(mKey);
       const hourlyRate = emp.baseSalary 
         ? Math.floor(emp.baseSalary / (daysInMonth * 8)) 
         : (emp.hourlyRate || 150);
 
-      const grossPay = Math.floor(totalHours * hourlyRate);
+      const regularPay = Math.floor(hoursBreakdown.regular * hourlyRate);
+      const overtimePay = Math.floor(hoursBreakdown.overtime * hourlyRate);
+      const grossPay = regularPay + overtimePay;
 
       const pendingAdvances = await Advance.find({ employeeId: eId, status: 'Pending' });
       const advanceDeduction = pendingAdvances.reduce((s, a) => s + a.amount, 0);
@@ -66,14 +78,13 @@ exports.processPayroll = async (req, res) => {
           employeeName: emp.name,
           monthKey: mKey,
           monthLabel,
-          totalHours,
+          totalHours: hoursBreakdown.total,
           amount: netSalary,
           status: 'Paid',
           date: payDateStr,
         });
         newRecords.push(record);
 
-        // Mark attendance as paid for this employee and month
         await Attendance.updateMany(
           { 
             employeeId: eId, 
@@ -82,6 +93,26 @@ exports.processPayroll = async (req, res) => {
           },
           { paymentStatus: 'paid' }
         );
+
+        // Send WhatsApp notification
+        if (emp.mobile) {
+          whatsappService.sendSalaryAlert({
+            employeeName: emp.name,
+            mobile: emp.mobile,
+            monthLabel,
+            netSalary,
+            regularHours: hoursBreakdown.regular,
+            overtimeHours: hoursBreakdown.overtime,
+            regularPay,
+            overtimePay,
+            advances: advanceDeduction,
+            paymentDate: payDateStr
+          });
+          // Add a small delay between messages (2 seconds)
+          await sleep(2000);
+        }
+
+
       } catch (err) {
         if (err.code === 11000) {
           console.log(`Skipping duplicate salary record for ${eId} - ${mKey}`);
