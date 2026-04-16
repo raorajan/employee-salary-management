@@ -141,15 +141,29 @@ class WhatsAppService {
         const message = `नमस्ते *${employeeName}*,\n\nआपका *${monthLabel}* का वेतन विवरण नीचे दिया गया है:\n\n*विवरण (Payroll Details):*\n--------------------------------\n📅 कुल कार्य दिवस: *${workingDays} दिन*\n⏰ सामान्य घंटे: *${regularHours} h*\n🚀 ओवरटाइम घंटे: *${overtimeHours} h*\n\n💰 नियमित वेतन: *₹${regularPay.toLocaleString()}*\n➕ ओवरटाइम वेतन: *₹${overtimePay.toLocaleString()}*\n➖ पेशगी कटौती (Advance): *₹${advances.toLocaleString()}*\n--------------------------------\n💵 *कुल शुद्ध वेतन (Net Salary): ₹${netSalary.toLocaleString()}*\n\n✅ भुगतान की तिथि: ${paymentDate}\n\nसादर,\n*RanjitEnterprises*`;
 
         try {
+            // 1. Send to Employee
             await this.client.sendMessage(chatId, message);
             console.log(`Detailed Hindi WhatsApp Alert sent to ${employeeName}`);
+
+            // Add a small 2-second safety delay to avoid WhatsApp spam detection
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // 2. Send Mirror to Admin (9773517745)
+            const adminNumber = '919773517745@c.us';
+            const adminMessage = `नमस्ते एडमिन,\n\n*RanjitEnterprises* के लिए *${employeeName}* का वेतन प्रोसेस हो गया है।\n\n*अपडेट विवरण:*\n- कुल कार्य दिवस: *${workingDays} दिन*\n- ओवरटाइम: *${overtimeHours} h*\n- शुद्ध वेतन (Net): *₹${netSalary.toLocaleString()}*\n- भुगतान तिथि: ${paymentDate}\n\nयह अपडेट आपकी जानकारी के लिए है।`;
+            
+            await this.client.sendMessage(adminNumber, adminMessage);
+            console.log(`Admin Mirror Alert sent to 9773517745 for ${employeeName}`);
+
             return true;
         } catch (err) {
-            console.error(`Error sending WhatsApp to ${employeeName}:`, err.message);
+            console.error(`Error sending WhatsApp to ${employeeName}/Admin:`, err.message);
             return false;
         }
+
     }
 }
+
 
 
 // Single instance for the application
